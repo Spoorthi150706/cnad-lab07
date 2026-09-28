@@ -1,0 +1,53 @@
+name: CI/CD with Helm
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+
+  # CI: Validate the Helm chart
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Get the source code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Install Helm
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+
+      # Check Helm version
+      - name: Check Helm
+        run: helm version
+
+      # Validate Helm chart
+      - name: Helm Lint
+        run: helm lint ./myapp
+
+      # Generate Kubernetes YAML
+      - name: Helm Template
+        run: helm template myapp ./myapp
+
+  # CD: Deployment stage
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+
+    steps:
+      # Get the source code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Install Helm
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+
+      # Display deployment command
+      - name: Helm Deploy
+        run: |
+          echo "Helm chart is ready for deployment"
+          helm upgrade --install myapp ./myapp
